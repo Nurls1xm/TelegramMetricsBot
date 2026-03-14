@@ -1,0 +1,11 @@
+# Docker volumes data
+prometheus_data/
+grafana_data/
+loki_data/
+
+# Environment files
+.env
+*.env
+
+# OS
+.DS_Store

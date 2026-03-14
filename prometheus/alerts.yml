@@ -1,0 +1,38 @@
+groups:
+  - name: server_alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 90
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CPU жоғары жүктеме: {{ $labels.instance }}"
+          description: "CPU {{ $value | printf \"%.1f\" }}% — 90%-дан асты"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RAM толып жатыр: {{ $labels.instance }}"
+          description: "RAM {{ $value | printf \"%.1f\" }}% қолданылып жатыр"
+
+      - alert: HighDiskUsage
+        expr: (1 - (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"})) * 100 > 85
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Диск толып жатыр: {{ $labels.instance }}"
+          description: "{{ $labels.mountpoint }} — {{ $value | printf \"%.1f\" }}% толған"
+
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Сервер өшіп қалды: {{ $labels.instance }}"
+          description: "{{ $labels.instance }} 1 минуттан бері жауап бермейді"
