@@ -128,7 +128,7 @@ services:
     container_name: admin_bot
     restart: unless-stopped
     environment:
-      - TELEGRAM_TOKEN=YOUR_BOT_TOKEN
+      - TELEGRAM_TOKEN=8729682156:AAHiFJAI1FRpcAkOygpA2E-HRjQNZdb0YfQ
       - PROMETHEUS_URL=http://prometheus:9090
     networks:
       - monitoring
