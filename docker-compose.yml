@@ -11,8 +11,6 @@ volumes:
 
 services:
 
-  # ─── Node Exporter ───────────────────────────────────────────
-  # Сервер метрикаларын жинайды (CPU, RAM, Disk, Network)
   node_exporter:
     image: prom/node-exporter:latest
     container_name: node_exporter
@@ -32,8 +30,6 @@ services:
     networks:
       - monitoring
 
-  # ─── Prometheus ──────────────────────────────────────────────
-  # Метрикаларды жинап, time-series базасына сақтайды
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -54,12 +50,12 @@ services:
     depends_on:
       - node_exporter
 
-  # ─── Alertmanager ────────────────────────────────────────────
-  # Prometheus-тен алерт алып, Telegram-ға жібереді
   alertmanager:
     image: prom/alertmanager:latest
     container_name: alertmanager
     restart: unless-stopped
+    environment:
+      - TZ=Asia/Almaty
     volumes:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
     command:
@@ -70,8 +66,6 @@ services:
     networks:
       - monitoring
 
-  # ─── Grafana ─────────────────────────────────────────────────
-  # Метрикаларды графикке айналдырады (Dashboard)
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -80,6 +74,8 @@ services:
       - GF_SECURITY_ADMIN_USER=kpunep2747
       - GF_SECURITY_ADMIN_PASSWORD=admin2747
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=
+      - TZ=Asia/Almaty
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
@@ -90,8 +86,6 @@ services:
     depends_on:
       - prometheus
 
-  # ─── Loki ────────────────────────────────────────────────────
-  # Логтарды жинап сақтайды (Grafana-да көруге болады)
   loki:
     image: grafana/loki:2.9.0
     container_name: loki
@@ -105,8 +99,6 @@ services:
     networks:
       - monitoring
 
-  # ─── Promtail ────────────────────────────────────────────────
-  # Сервер логтарын жинап Loki-ге жібереді
   promtail:
     image: grafana/promtail:2.9.0
     container_name: promtail
@@ -114,6 +106,7 @@ services:
     volumes:
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /etc/hostname:/etc/hostname:ro
       - ./promtail/promtail.yml:/etc/promtail/promtail.yml
     command: -config.file=/etc/promtail/promtail.yml
     networks:
@@ -121,8 +114,6 @@ services:
     depends_on:
       - loki
 
-  # ─── Admin Bot ───────────────────────────────────────────────
-  # /status командасымен сервер жағдайын Telegram арқылы көрсетеді
   admin_bot:
     build: ./admin_bot
     container_name: admin_bot
@@ -130,6 +121,7 @@ services:
     environment:
       - TELEGRAM_TOKEN=8729682156:AAHiFJAI1FRpcAkOygpA2E-HRjQNZdb0YfQ
       - PROMETHEUS_URL=http://prometheus:9090
+      - TZ=Asia/Almaty
     networks:
       - monitoring
     depends_on:

@@ -13,7 +13,16 @@ receivers:
     telegram_configs:
       - bot_token: "8729682156:AAHiFJAI1FRpcAkOygpA2E-HRjQNZdb0YfQ"
         chat_id: 1046597510
-        message: "Alert: {{ .GroupLabels.alertname }} - Firing"
+        message: |
+          <b>🚨 СЕРВЕР ЕСКЕРТУІ</b>
+          {{ range .Alerts.Firing }}
+          🖥 Сервер: <code>{{ .Labels.instance }}</code>
+          📊 Алерт түрі: <code>{{ .Labels.alertname }}</code>
+          ⏰ Уақыты: <code>{{ (.StartsAt.Add 18000000000000).Format "15:04:05" }}</code>
+          ⚠️ Күйі: CRITICAL
+          ℹ️ {{ .Annotations.description }}
+          🔧 Ұсыныс: Сервердің жағдайын тексеріңіз.
+          {{ end }}
         parse_mode: "HTML"
 
 inhibit_rules:
