@@ -70,12 +70,36 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ram_str  = f"{ram:.1f}%" if ram is not None else "N/A"
     disk_str = f"{disk:.1f}%" if disk is not None else "N/A"
 
+    # Определяем статус каждого показателя
+    def get_status(val):
+        if val is None: return None
+        if val >= 90: return "critical"
+        if val >= 70: return "warning"
+        return "ok"
+
+    cpu_status = get_status(cpu)
+    ram_status = get_status(ram)
+    disk_status = get_status(disk)
+
+    # Логика статуса
+    # 1) Если CPU зеленый = Қалыпты
+    if cpu_status == "ok":
+        status_msg = "✅ Сервер қалыпты жұмыс істейді"
+    # 2) Если ВСЕ три желтые = Назар аударыңыз
+    elif cpu_status == "warning" and ram_status == "warning" and disk_status == "warning":
+        status_msg = "🟡 Назар аударыңыз"
+    # 3) Если хоть один красный = Мәселелері бар
+    elif cpu_status == "critical" or ram_status == "critical" or disk_status == "critical":
+        status_msg = "🚨 Сервердің мәселелері бар!"
+    else:
+        status_msg = "⚠️ Кейбір метрикалар қолжетімсіз"
+
     msg = (
         f"📊 *Server Status*\n\n"
         f"{get_icon(cpu)}  CPU:  `{cpu_str}`\n"
         f"{get_icon(ram)}  RAM:  `{ram_str}`\n"
         f"{get_icon(disk, 75, 85)}  Disk: `{disk_str}`\n\n"
-        f"{'✅ Сервер қалыпты жұмыс істейді' if all(v is not None for v in [cpu, ram, disk]) else '⚠️ Кейбір метрикалар қолжетімсіз'}"
+        f"{status_msg}"
     )
 
     await update.message.reply_text(msg, parse_mode="Markdown", reply_markup=get_keyboard())
